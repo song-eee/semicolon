@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>주제별 생각 보기</title>
+  <style>
+    @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css');
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #F9F7F2;
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    .sheet {
+      width: 520px;
+      flex-shrink: 0;
+      background: #F9F7F2;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: -4px 0 8px 0 rgba(0,0,0,0.05), 4px 0 8px 0 rgba(0,0,0,0.05);
+    }
+
+    /* ── Tab Bar ── */
+    .tab-bar {
+      display: flex;
+      align-items: center;
+      padding: 12px 30px 12px 16px;
+      gap: 8px;
+      background: #fff;
+      border-bottom: 1px solid #efefef;
+    }
+
+    .tab-btn {
+      width: 120px;
+      flex: none;
+      padding: 10px 0;
+      border-radius: 999px;
+      border: none;
+      background: #F5F4F1;
+      font-size: 15px;
+      font-weight: 500;
+      color: #000000;
+      cursor: pointer;
+      transition: background 0.18s, color 0.18s;
+    }
+
+    .tab-btn.active {
+      background: #484441;
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .close-btn {
+      width: 36px;
+      height: 36px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #444;
+      font-size: 22px;
+      flex-shrink: 0;
+      margin-left: auto;
+    }
+
+    /* ── Header ── */
+    .header-box {
+      padding: 20px 20px 20px;
+      background: #F9F7F2;
+    }
+
+    .header-box p {
+      font-size: 15px;
+      color: #444;
+      line-height: 1.6;
+    }
+
+    .header-box strong {
+      font-weight: 700;
+      color: #1a1a1a;
+    }
+
+    /* ── Bubble Map ── */
+    .bubble-area {
+      background: #F9F7F2;
+      padding: 0 20px;
+      height: 280px;
+      position: relative;
+    }
+
+    .bubble-wrap {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+
+    .bubble {
+      position: absolute;
+      border-radius: 50%;
+      background-image: url('circle.png');
+      background-size: 100% 100%;
+      background-color: transparent;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.18s;
+      user-select: none;
+      line-height: 1.4;
+    }
+
+    .bubble:hover { transform: scale(1.05); }
+
+    .bubble.active { outline: none; }
+
+    .bubble span {
+      padding: 8px;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: #745B2E;
+      word-break: keep-all;
+    }
+
+    /* 버블 크기·폰트는 JS의 applyBubbleSizes()가 데이터 기반으로 런타임에 주입합니다.
+       슬롯 클래스(.b-center 등)는 레이아웃 앵커 식별용으로만 사용합니다.        */
+    .b-center span { font-weight: 700; }
+
+    /* ── Divider ── */
+    .divider {
+      height: 30px;
+      background: #F9F7F2;
+    }
+
+    /* ── Topic List ── */
+    .topic-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding-bottom: 20px;
+    }
+
+    .topic-card {
+      padding: 20px 20px 16px;
+      border-radius: 6px;
+      border: 1px solid transparent;
+      cursor: pointer;
+      background: #fff;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .topic-card:hover {
+      border-color: rgba(0,0,0,0.2);
+      box-shadow: 1px 1px 10px rgba(0,0,0,0.1);
+    }
+
+    .topic-card h3 {
+      font-size: 16px;
+      font-weight: 700;
+      color: #000000;
+      margin-bottom: 8px;
+    }
+
+    .topic-card p {
+      font-size: 13.5px;
+      color: #000000;
+      line-height: 1.6;
+      margin-bottom: 12px;
+      word-break: keep-all;
+    }
+
+    .card-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .meta-left {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12.5px;
+      color: #000000;
+    }
+
+    .filter-icon {
+      width: 18px;
+      height: 18px;
+      object-fit: contain;
+      flex-shrink: 0;
+    }
+
+    .meta-sep { color: #ccc; }
+
+    /* ── Card pagination ── */
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .card-header h3 { margin-bottom: 0; }
+
+    .pagination {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.15s;
+    }
+    .topic-card:hover .pagination {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .page-num {
+      font-size: 12px;
+      color: #888;
+      white-space: nowrap;
+    }
+    .move-ctrl {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+    }
+    .move-img {
+      height: 28px;
+      display: block;
+      pointer-events: none;
+    }
+    .move-half {
+      position: absolute;
+      top: 0; bottom: 0;
+      width: 50%;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+    }
+    .move-up  { left: 0; }
+    .move-down { right: 0; }
+
+    .reactions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .reaction {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      font-size: 12.5px;
+      color: #000000;
+    }
+
+    .reaction .dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .dot-green  { background: #00BF96; }
+    .dot-blue   { background: #0090FF; }
+    .dot-purple { background: #8400FF; }
+    .dot-orange { background: #FF5100; }
+
+    .reply-icon {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      font-size: 12.5px;
+      color: #000000;
+    }
+
+    .reply-icon img {
+      width: 10px;
+      height: 10px;
+      object-fit: contain;
+    }
+  </style>
+</head>
+<body>
+<div class="sheet">
+
+  <!-- Tab Bar -->
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="selectTab(this)">주제별</button>
+    <button class="tab-btn" onclick="selectTab(this)">생각별</button>
+    <button class="tab-btn" onclick="selectTab(this)">멤버별</button>
+    <button class="close-btn" aria-label="닫기">✕</button>
+  </div>
+
+  <!-- Header -->
+  <div class="header-box">
+    <p>이 글에 남긴 <strong>53개의 생각</strong>은 <strong>5개의 주제</strong>로 나누어집니다.</p>
+    <p>관심있는 주제를 선택해 생각들을 살펴보세요.</p>
+  </div>
+
+  <!-- Bubble Map -->
+  <div class="bubble-area">
+    <div class="bubble-wrap">
+      <div class="bubble b-center active" onclick="selectBubble(this)">
+        <span>원시 신앙과 집단</span>
+      </div>
+      <div class="bubble b-tl" onclick="selectBubble(this)">
+        <span>기둥과<br>원시종교</span>
+      </div>
+      <div class="bubble b-tr" onclick="selectBubble(this)">
+        <span>종교와<br>농경의 순서</span>
+      </div>
+      <div class="bubble b-bl" onclick="selectBubble(this)">
+        <span>종교적<br>집회 장소</span>
+      </div>
+      <div class="bubble b-br" onclick="selectBubble(this)">
+        <span>시대별<br>생활 차이</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- Topic List -->
+  <div class="topic-list">
+
+    <div class="topic-card">
+      <div class="card-header">
+        <h3>원시 신앙과 집단</h3>
+        <div class="pagination">
+          <span class="page-num">1/21</span>
+          <div class="move-ctrl">
+            <img src="move_1.png" class="move-img" alt="" />
+            <button class="move-half move-up"  onclick="handleMove(this, -1)"></button>
+            <button class="move-half move-down" onclick="handleMove(this,  1)"></button>
+          </div>
+        </div>
+      </div>
+      <p>원시 성소를 중심으로 인접 집단이 신앙을 공유하며 협력했을 가능성이 논의된다. 종교를 개인적 신앙과 집단적 의례 중 어떻게 규정할지, 조상...</p>
+      <div class="card-meta">
+        <div class="meta-left">
+          <img src="Property 1=filtering_s.png" class="filter-icon" alt="" />
+          <span>21개</span><span class="meta-sep">|</span>
+          <span>13명</span><span class="meta-sep">|</span>
+          <span>39.6%</span>
+        </div>
+        <div class="reactions">
+          <span class="reaction"><span class="dot dot-green"></span>5</span>
+          <span class="reaction"><span class="dot dot-blue"></span>3</span>
+          <span class="reaction"><span class="dot dot-purple"></span>11</span>
+          <span class="reaction"><span class="dot dot-orange"></span>2</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="topic-card">
+      <div class="card-header">
+        <h3>기둥과 원시종교</h3>
+        <div class="pagination">
+          <span class="page-num">1/11</span>
+          <div class="move-ctrl">
+            <img src="move_1.png" class="move-img" alt="" />
+            <button class="move-half move-up"  onclick="handleMove(this, -1)"></button>
+            <button class="move-half move-down" onclick="handleMove(this,  1)"></button>
+          </div>
+        </div>
+      </div>
+      <p>T자형 기둥과 동물 조각을 지닌 신전 유적이 지역 네트워크와 숭배·조상 숭배를 시사한다. 그러나 종교가 농경 이전에 생겼는지, T자형의 이유와...</p>
+      <div class="card-meta">
+        <div class="meta-left">
+          <img src="Property 1=filtering_s.png" class="filter-icon" alt="" />
+          <span>11개</span><span class="meta-sep">|</span>
+          <span>10명</span><span class="meta-sep">|</span>
+          <span>20.8%</span>
+        </div>
+        <div class="reactions">
+          <span class="reaction"><span class="dot dot-green"></span>2</span>
+          <span class="reaction"><span class="dot dot-blue"></span>2</span>
+          <span class="reaction"><span class="dot dot-purple"></span>4</span>
+          <span class="reaction"><span class="dot dot-orange"></span>2</span>
+          <span class="reply-icon"><img src="ic_reply.png" alt="" />1</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="topic-card">
+      <div class="card-header">
+        <h3>종교와 농경의 순서</h3>
+        <div class="pagination">
+          <span class="page-num">1/10</span>
+          <div class="move-ctrl">
+            <img src="move_1.png" class="move-img" alt="" />
+            <button class="move-half move-up"  onclick="handleMove(this, -1)"></button>
+            <button class="move-half move-down" onclick="handleMove(this,  1)"></button>
+          </div>
+        </div>
+      </div>
+      <p>종교 의례가 먼저라는 대안은 흥미롭지만, 의례는 중심 인물이나 계급을 수반할 수 있어 '평등 사회' 추정과 모순될 여지가 있다. 대규모 건립과 조...</p>
+      <div class="card-meta">
+        <div class="meta-left">
+          <img src="Property 1=filtering_s.png" class="filter-icon" alt="" />
+          <span>10개</span><span class="meta-sep">|</span>
+          <span>6명</span><span class="meta-sep">|</span>
+          <span>18.9%</span>
+        </div>
+        <div class="reactions">
+          <span class="reaction"><span class="dot dot-green"></span>4</span>
+          <span class="reaction"><span class="dot dot-blue"></span>1</span>
+          <span class="reaction"><span class="dot dot-purple"></span>4</span>
+          <span class="reply-icon"><img src="ic_reply.png" alt="" />1</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="topic-card">
+      <div class="card-header">
+        <h3>종교적 집회 장소</h3>
+        <div class="pagination">
+          <span class="page-num">1/9</span>
+          <div class="move-ctrl">
+            <img src="move_1.png" class="move-img" alt="" />
+            <button class="move-half move-up"  onclick="handleMove(this, -1)"></button>
+            <button class="move-half move-down" onclick="handleMove(this,  1)"></button>
+          </div>
+        </div>
+      </div>
+      <p>수렵·채집인들이 특정 장소에 정기적으로 몇 달씩 모여 의식을 치렀고, 그 반복이 정착과 농경으로 이어졌다는 학설이 있다. 그러나 식량 조달·유지...</p>
+      <div class="card-meta">
+        <div class="meta-left">
+          <img src="Property 1=filtering_s.png" class="filter-icon" alt="" />
+          <span>9개</span><span class="meta-sep">|</span>
+          <span>8명</span><span class="meta-sep">|</span>
+          <span>17%</span>
+        </div>
+        <div class="reactions">
+          <span class="reaction"><span class="dot dot-blue"></span>1</span>
+          <span class="reaction"><span class="dot dot-purple"></span>8</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="topic-card">
+      <div class="card-header">
+        <h3>시대별 생활 차이</h3>
+        <div class="pagination">
+          <span class="page-num">1/2</span>
+          <div class="move-ctrl">
+            <img src="move_1.png" class="move-img" alt="" />
+            <button class="move-half move-up"  onclick="handleMove(this, -1)"></button>
+            <button class="move-half move-down" onclick="handleMove(this,  1)"></button>
+          </div>
+        </div>
+      </div>
+      <p>약 1400년 존속한 거주지라면 시대별 생활상이 달랐을 수 있다. 유해의 균일한 영양 상태는 인구가 적거나 실제 거주 규모가 작았을 가능성으로...</p>
+      <div class="card-meta">
+        <div class="meta-left">
+          <img src="Property 1=filtering_s.png" class="filter-icon" alt="" />
+          <span>2개</span><span class="meta-sep">|</span>
+          <span>2명</span><span class="meta-sep">|</span>
+          <span>3.8%</span>
+        </div>
+        <div class="reactions">
+          <span class="reaction"><span class="dot dot-purple"></span>2</span>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /topic-list -->
+</div><!-- /sheet -->
+
+<script>
+  // ── 토픽 데이터 ─────────────────────────────────────────────────────
+  // 데이터를 변경하면 버블 크기·폰트·위치가 자동으로 재계산됩니다.
+  // cx/cy: 480×280 인포그래픽 영역 내 각 슬롯의 중심 좌표 (px)
+  const TOPICS = [
+    { slot: 'b-center', name: '원시 신앙과 집단',  pct: 39.6, cx: 240, cy: 140 },
+    { slot: 'b-tl',     name: '기둥과 원시종교',   pct: 20.8, cx: 120, cy:  60 },
+    { slot: 'b-tr',     name: '종교와 농경의 순서', pct: 18.9, cx: 357, cy:  60 },
+    { slot: 'b-bl',     name: '종교적 집회 장소',  pct: 17.0, cx: 125, cy: 220 },
+    { slot: 'b-br',     name: '시대별 생활 차이',  pct:  3.8, cx: 336, cy: 220 },
+  ];
+
+  // ── 크기 상수 ────────────────────────────────────────────────────────
+  // MIN_SIZE: 텍스트 2줄이 잘리지 않는 최소 지름
+  // MAX_SIZE: 480×280 영역 안에서 5개 버블이 겹치지 않는 최대 지름
+  const MIN_SIZE = 80, MAX_SIZE = 160;
+  // MIN_FONT / MAX_FONT: 버블 크기에 비례하는 폰트 범위
+  const MIN_FONT = 11, MAX_FONT = 14;
+
+  // ── 버블 크기 · 폰트 · 위치 적용 ────────────────────────────────────
+  // 공식:
+  //   ratio    = (pct - pMin) / (pMax - pMin)
+  //   diameter = MIN_SIZE + ratio × (MAX_SIZE - MIN_SIZE)
+  //   fontSize = MIN_FONT + ratio × (MAX_FONT - MIN_FONT)
+  //   left     = cx - diameter / 2
+  //   top      = cy - diameter / 2
+  function applyBubbleSizes(topics) {
+    const pcts = topics.map(t => t.pct);
+    const pMin = Math.min(...pcts);
+    const pMax = Math.max(...pcts);
+
+    topics.forEach(t => {
+      const ratio    = pMax === pMin ? 1 : (t.pct - pMin) / (pMax - pMin);
+      const diameter = Math.round(MIN_SIZE + ratio * (MAX_SIZE - MIN_SIZE));
+      const fontSize = parseFloat((MIN_FONT + ratio * (MAX_FONT - MIN_FONT)).toFixed(1));
+      const radius   = diameter / 2;
+
+      const el = document.querySelector(`.${t.slot}`);
+      if (!el) return;
+      el.style.width  = `${diameter}px`;
+      el.style.height = `${diameter}px`;
+      el.style.left   = `${t.cx - radius}px`;
+      el.style.top    = `${t.cy - radius}px`;
+
+      const span = el.querySelector('span');
+      if (span) span.style.fontSize = `${fontSize}px`;
+    });
+  }
+
+  applyBubbleSizes(TOPICS);
+
+  // ─────────────────────────────────────────────────────────────────────
+  function selectTab(btn) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+
+  function selectBubble(el) {
+    document.querySelectorAll('.bubble').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  function handleMove(btn, direction) {
+    const ctrl    = btn.closest('.move-ctrl');
+    const pagination = btn.closest('.pagination');
+    const numSpan = pagination.querySelector('.page-num');
+    const img     = ctrl.querySelector('.move-img');
+
+    const parts = numSpan.textContent.split('/');
+    let cur   = parseInt(parts[0]);
+    const total = parseInt(parts[1]);
+
+    cur += direction;
+    if (cur < 1 || cur > total) return;
+
+    numSpan.textContent = `${cur}/${total}`;
+
+    if (cur === 1)       img.src = 'move_1.png';
+    else if (cur === total) img.src = 'move_3.png';
+    else                 img.src = 'move_2.png';
+  }
+</script>
+</body>
+</html>
