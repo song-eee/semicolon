@@ -836,7 +836,7 @@ function openReadingPopup(mode){
  dialog.dataset.mode=mode;
  const text=document.getElementById('readingPopupText');
  if(mode==='start'){
-  text.textContent='주제를 시작하면 참가자들에게 알림이 가고, 함께 읽기가 시작됩니다.';
+  text.innerHTML='주제를 시작하면 참가자들에게 알림이 가며,<br>함께 읽기가 시작됩니다.';
  }else if(mode==='insight'){
   text.innerHTML='함께 읽기를 종료하면 자동으로 <span class="social-insight">소셜 인사이트</span>가 생성되어 참여자들의 생각을 다각도로 모아볼 수 있습니다. 그리고 <strong>이 주제의 글에는 더 이상의 생각을 추가할 수 없습니다.</strong>';
  }else{
