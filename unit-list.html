@@ -838,7 +838,7 @@ function openReadingPopup(mode){
  if(mode==='insight'){
   text.innerHTML='함께 읽기를 종료하면 자동으로 <span class="social-insight">소셜 인사이트</span>가 생성되어 참여자들의 생각을 다각도로 모아볼 수 있습니다. 그리고 <strong>이 주제의 글에는 더 이상의 생각을 추가할 수 없습니다.</strong>';
  }else{
-  text.innerHTML='함께 읽기를 다시 시작하여, 새로운 생각을 추가할 수 있습니다. <strong>기존의 소셜 인사이트 정보는 모두 사라집니다.</strong>';
+  text.innerHTML='함께 읽기를 다시 시작하여, 새로운 생각을 추가할 수 있습니다. <strong>기존의 소셜 인사이트 정보는 모두 사라지며 이후 다시 생성할 수 있습니다.</strong>';
  }
  document.getElementById('confirmInsight').textContent=mode==='insight'?'인사이트 생성':'함께 읽기 다시 시작';
  readingPopupOverflow=document.body.style.overflow;
