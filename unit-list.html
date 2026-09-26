@@ -66,6 +66,10 @@
   /* ── Sidebar Panel ── */
   /* 구조(폭/패딩/정렬) 변화는 항상 --t-move 길이로, 방향에 따라 --t-fade만큼 지연되어 시작합니다 */
   .sidebar {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    height: 100dvh;
     width: var(--sidebar-w);
     flex-shrink: 0;
     box-shadow: 6px 0 20px rgba(0, 0, 0, 0.06);
@@ -428,56 +432,106 @@
   .sidebar-footer {
     margin-top: auto;
     display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    width: var(--sidebar-w);
+    flex-shrink: 0;
+    padding: 24px 20px 36px 30px;
+  }
+  .sidebar-account, .logout, .support-copy {
+    display: flex;
     align-items: center;
-    gap: 20px;
-    padding: 24px 24px 32px 30px;
-    opacity: 1;
-    /* 펼침: 패널이 다 늘어난 뒤에 나타남 */
-    transition: opacity var(--t-fade) ease var(--t-move);
+    gap: 10px;
+    width: 100%;
+    height: 24px;
+    flex-shrink: 0;
   }
-
-  /* 축소된 패널에서는 맨 하단 요소가 아예 사라짐 */
-  .sidebar.is-collapsed .sidebar-footer {
-    opacity: 0;
-    pointer-events: none;
-    /* 접힘: 지연 없이 즉시 사라짐 */
-    transition: opacity var(--t-fade) ease;
+  .logout, .support-copy {
+    padding: 0;
+    background: none;
+    border: none;
+    font-weight: 400;
+    line-height: 24px;
+    font-family: inherit;
+    font-size: 15px;
+    color: #111;
+    white-space: nowrap;
+    text-align: left;
+    cursor: pointer;
   }
-
+  .support-copy { margin-bottom: 16px; }
   .user-badge {
-    flex: 1;
+    display: block;
     min-width: 0;
+    max-width: 100%;
     height: 20px;
     line-height: 20px;
     padding: 0 6px;
+    border-radius: 3px;
+    font-size: 14px;
+    font-weight: 400;
+    white-space: nowrap;
+    user-select: text;
+    -webkit-user-select: text;
+    cursor: text;
     background: var(--ink);
     color: #fff;
-    font-weight: 400;
-    font-size: 14px;
-    border-radius: 3px;
-    text-align: center;
-    white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
-
-  .user-badge strong {
-    font-weight: 700;
+  .logout-icon, .support-icon, .account-icon, .support-icon-stack {
+    display: block;
+    width: 20px;
+    height: 20px;
+    flex: 0 0 20px;
+  }
+  .support-icon-stack { position: relative; }
+  .support-icon { position: absolute; inset: 0; transition: opacity .6s ease; }
+  .support-label { display: grid; }
+  .support-label > span { grid-area: 1 / 1; transition: opacity .6s ease; }
+  .support-hover-text, .support-success-text { font-size: 15px; letter-spacing: -.25px; }
+  .support-hover-icon, .support-hover-text, .support-success-text { opacity: 0; }
+  .support-copy { transition: color .6s ease; }
+  .support-copy:not(.is-resting):is(:hover,:focus-visible), .support-copy.is-copied { color: #019A64; }
+  .support-copy:not(.is-resting):is(:hover,:focus-visible) .support-default-icon,
+  .support-copy:not(.is-resting):is(:hover,:focus-visible) .support-default-text,
+  .support-copy.is-copied .support-default-icon,
+  .support-copy.is-copied .support-default-text { opacity: 0; }
+  .support-copy:not(.is-resting):is(:hover,:focus-visible) .support-hover-icon,
+  .support-copy.is-copied .support-hover-icon,
+  .support-copy:not(.is-resting):not(.is-copied):is(:hover,:focus-visible) .support-hover-text,
+  .support-copy.is-copied .support-success-text { opacity: 1; }
+  @media(prefers-reduced-motion:reduce) {
+    .support-copy, .support-icon, .support-label > span { transition: none; }
   }
 
-  .logout {
-    background: none;
-    border: none;
-    font-family: inherit;
-    font-weight: 400;
-    font-size: 14px;
-    color: #333;
-    cursor: pointer;
-    white-space: nowrap;
-    flex-shrink: 0;
-    /* sidebar-footer의 오른쪽 padding(24px)에서 4px를 빼 패널 우측과 정확히 20px가 되도록 함 */
-    margin-right: -4px;
+  .footer-divider {
+    width: 100%;
+    height: 1px;
+    margin: 20px 0;
+    background: rgba(20,20,20,.12);
   }
+  .logout:focus-visible, .support-copy:focus-visible {
+    outline: 2px solid #019A64;
+    outline-offset: 4px;
+    border-radius: 2px;
+  }
+  /* Preserve footer geometry when the panel collapses. */
+  .user-badge, .logout-label, .support-label, .footer-divider {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity var(--t-fade) ease var(--t-move), visibility 0s var(--t-move);
+  }
+  .sidebar.is-collapsed .user-badge,
+  .sidebar.is-collapsed .logout-label,
+  .sidebar.is-collapsed .support-label,
+  .sidebar.is-collapsed .footer-divider {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity var(--t-fade) ease, visibility 0s var(--t-fade);
+  }
+  .sidebar.is-collapsed .logout, .sidebar.is-collapsed .support-copy { width: 20px; }
 
   /* ── Main Content ── */
   .content {
@@ -617,15 +671,11 @@ body.dg-on .class-page :is(header,.activity,.reading-row,.unit-body,.toolbar,.un
 #designGuidePanel .dg-state-card strong{display:block;font-size:12px;margin-bottom:4px}
 #designGuidePanel .dg-state-card p{margin:0;font-size:12px}
 
-.unit-action.insight.is-loading{gap:10px;cursor:wait;opacity:1}
-.unit-action.insight.is-loading::before{display:none}
-.insight-loading-icon{display:block;width:20px;height:20px;flex:0 0 20px}
-.unit-action.is-loading>span{animation:insight-loading-text 1.5s ease-in-out infinite}
-@keyframes insight-loading-text{0%,100%{opacity:1}50%{opacity:.1}}
-.insight-loading-icon path{animation:insight-loading-blink 1s ease-in-out infinite}
-.insight-loading-icon .insight-loading-semicolon{animation-delay:-.5s}
-@keyframes insight-loading-blink{0%,20%,100%{opacity:1}50%,70%{opacity:.15}}
-@media(prefers-reduced-motion:reduce){.insight-loading-icon,.insight-loading-icon path,.unit-action.is-loading>span{animation:none;opacity:1}}
+.unit-action.insight.is-loading{display:none}
+.insight-loading-status{display:flex;align-items:center;justify-content:center;width:20px;height:36px;flex:0 0 20px;margin-left:auto}
+.insight-loading-spinner{display:block;width:20px;height:20px;box-sizing:border-box;border:2px solid #e6d9ff;border-top-color:#7427ff;border-right-color:#7427ff;border-radius:50%;animation:insight-loading-spin .8s linear infinite}
+@keyframes insight-loading-spin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.insight-loading-spinner{animation:none}}
 
 .reading-popup[data-mode="failure"] p{font-weight:800;white-space:pre-line}
 .reading-popup[data-mode="failure"] .reading-popup-button{background:#d33f40;color:#fff}
@@ -706,8 +756,14 @@ body.dg-on .class-page :is(header,.activity,.reading-row,.unit-body,.toolbar,.un
       </div>
 
       <div class="sidebar-footer">
-        <span class="user-badge">songsong123@gmail.com</span>
-        <button class="logout">로그아웃</button>
+        <button class="support-copy" id="copySupportEmail" type="button" aria-label="문의 이메일 wing@flyingkiwi.kiwi 복사" title="wing@flyingkiwi.kiwi 복사">
+          <span class="support-icon-stack" aria-hidden="true"><img class="support-icon support-default-icon" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHZpZXdCb3g9IjAgMCAyMCAyMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZmlsbC1ydWxlPSJldmVub2RkIiBjbGlwLXJ1bGU9ImV2ZW5vZGQiIGQ9Ik0xNyAxMEMxNyAxMy44NjU0IDEzLjg2NTggMTcgOS45OTk2NSAxN0M2LjEzMzkgMTcgMyAxMy44NjU0IDMgMTBDMyA2LjEzNDYgNi4xMzM5IDMgOS45OTk2NSAzQzEzLjg2NTggMyAxNyA2LjEzNDYgMTcgMTBaTTguNDk4ODcgNi43ODU0NUM4LjIyNDU2IDcuMTExODUgOC4xMzMyNiA3LjUwODc0IDguMTMzMjYgNy43NTY5OEg3LjE5OTkyQzcuMTk5OTIgNy4zMjY5NCA3LjM0NjEzIDYuNzA2NDIgNy43ODQzNSA2LjE4NDk3QzguMjM3ODQgNS42NDUzNiA4Ljk2NzcgNS4yNTU0OCAxMC4wNDE3IDUuMjU1NDhDMTEuMTE1NyA1LjI1NTQ4IDExLjgzNjggNS42NDU4NiAxMi4yNzQ2IDYuMTkzOTdDMTIuNjkzIDYuNzE3ODEgMTIuODE0MyA3LjMzNzY3IDEyLjc5ODYgNy43NjY2MUMxMi43OTY2IDguMjIzNDMgMTIuNjUwOSA4Ljc4MzkzIDEyLjQxMDYgOS4xMzE5OEMxMi4xMTk4IDkuNTUzMzEgMTEuNTk1OCA5Ljg4NzY2IDEwLjg4NTQgMTAuMjk3QzEwLjM3NjQgMTAuNTkwNCAxMC4zMDQ4IDExLjA3NDYgMTAuMzA0OCAxMS40MDYyVjExLjk0NDRIOS4zNzE0NFYxMS40MDYyQzkuMzcxNDQgMTAuOTY0MyA5LjQ2OTQgMTAuMDM1OSAxMC40MTk0IDkuNDg4MzlDMTEuMTY4IDkuMDU2OTQgMTEuNDkyMiA4LjgxOTUxIDExLjY0MjUgOC42MDE4QzExLjc1MzUgOC40NDEwNyAxMS44NjUzIDguMDcyIDExLjg2NTMgNy43NTY5OFY3Ljc0NzI2TDExLjg2NTcgNy43Mzc1NEMxMS44NzYxIDcuNDg4NTIgMTEuODAwOSA3LjA5NjQ1IDExLjU0NTMgNi43NzY0NUMxMS4zMDU5IDYuNDc2NzEgMTAuODY3OCA2LjE4ODgxIDEwLjA0MTcgNi4xODg4MUM5LjIxNTU5IDYuMTg4ODEgOC43NTc5MSA2LjQ3NzIxIDguNDk4ODcgNi43ODU0NVpNOC45ODg4NSAxNC4xMjIyQzguOTg4ODUgMTMuNjQ5NyA5LjM3MTkgMTMuMjY2NiA5Ljg0NDQxIDEzLjI2NjZDMTAuMzE2OSAxMy4yNjY2IDEwLjcgMTMuNjQ5NyAxMC43IDE0LjEyMjJDMTAuNyAxNC41OTQ3IDEwLjMxNjkgMTQuOTc3NyA5Ljg0NDQxIDE0Ljk3NzdDOS4zNzE5IDE0Ljk3NzcgOC45ODg4NSAxNC41OTQ3IDguOTg4ODUgMTQuMTIyMloiIGZpbGw9ImJsYWNrIi8+Cjwvc3ZnPgo=" width="20" height="20" alt=""><img class="support-icon support-hover-icon" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHZpZXdCb3g9IjAgMCAyMCAyMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEwLjY1MTkgNS4zNDgxMUw1LjQ4NjA2IDEwLjUxMzlDNC41NDY4MiAxMS40NTMyIDMuODQwODkgMTMuNTY1IDUuNTM5NjEgMTUuMjYzN0M3LjIzODM0IDE2Ljk2MjQgOS40OTY1NyAxNi40MDI5IDEwLjQzNTggMTUuNDYzN0wxNi4wNzEzIDkuODI4MjNDMTcuNDgwMSA4LjQxOTM3IDE3LjEwMDQgNy4xMDAzOCAxNi4yNTEgNi4yNTEwMkMxNS40MDE3IDUuNDAxNjYgMTQuMDgyNyA1LjAyMTkyIDEyLjY3MzggNi40MzA3OEw3LjUwNzk4IDExLjU5NjZDNy4xOTQ5IDExLjkwOTcgNi43Mzg2MSAxMi43MDU3IDcuNDE4MSAxMy4zODUyQzcuNzAxMjIgMTMuNjY4MyA4LjQ1NTMxIDE0LjA0NjcgOS4yMDY3IDEzLjI5NTNMMTMuOTAyOSA4LjU5OTEzIiBzdHJva2U9IiMwMTlBNjQiIHN0cm9rZS13aWR0aD0iMS4yIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+Cg==" width="20" height="20" alt=""></span>
+          <span class="support-label"><span class="support-default-text">문의하기</span><span class="support-hover-text">wing@flyingkiwi.kiwi 복사</span><span class="support-success-text">링크가 복사되었습니다</span></span>
+        </button>
+        <button class="logout" type="button" aria-label="로그아웃" title="로그아웃"><img class="logout-icon" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHZpZXdCb3g9IjAgMCAyMCAyMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZmlsbC1ydWxlPSJldmVub2RkIiBjbGlwLXJ1bGU9ImV2ZW5vZGQiIGQ9Ik0xMi44OTk4IDQuOTI3MjRDMTMuMTU4MiA0LjY2MDk3IDEzLjU3NzIgNC42NjA5NyAxMy44MzU3IDQuOTI3MjRMMTcuODA2MyA5LjAxODE1QzE4LjA2NDcgOS4yODQ0MiAxOC4wNjQ3IDkuNzE2MTIgMTcuODA2MyA5Ljk4MjM4TDEzLjgzNTcgMTQuMDczM0MxMy41NzcyIDE0LjMzOTYgMTMuMTU4MiAxNC4zMzk2IDEyLjg5OTggMTQuMDczM0MxMi42NDE0IDEzLjgwNyAxMi42NDE0IDEzLjM3NTMgMTIuODk5OCAxMy4xMDkxTDE1Ljc0MDcgMTAuMTgyMUg4LjUxNDc5QzguMTQ5MzEgMTAuMTgyMSA3Ljg1MzAzIDkuODc2ODIgNy44NTMwMyA5LjUwMDI3QzcuODUzMDMgOS4xMjM3MSA4LjE0OTMxIDguODE4NDUgOC41MTQ3OSA4LjgxODQ1SDE1Ljc0MDdMMTIuODk5OCA1Ljg5MTQ4QzEyLjY0MTQgNS42MjUyMSAxMi42NDE0IDUuMTkzNTEgMTIuODk5OCA0LjkyNzI0WiIgZmlsbD0iYmxhY2siLz4KPHBhdGggZD0iTTMgNkMzIDQuODk1NDMgMy44OTU0MyA0IDUgNEg5QzEwLjEwNDYgNCAxMSA0Ljg5NTQzIDExIDZWMTNDMTEgMTQuMTA0NiAxMC4xMDQ2IDE1IDkgMTVINUMzLjg5NTQzIDE1IDMgMTQuMTA0NiAzIDEzVjZaIiBmaWxsPSJibGFjayIvPgo8cGF0aCBkPSJNNy41MTQ3OSAxMC4xODJDNy4xNDkzMSAxMC4xODIgNi44NTMwMyA5Ljg3Njc0IDYuODUzMDMgOS41MDAxOEM2Ljg1MzAzIDkuMTIzNjIgNy4xNDkzMSA4LjgxODM2IDcuNTE0NzkgOC44MTgzNkgxMVYxMC4xODJINy41MTQ3OVoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPgo=" width="20" height="20" alt=""><span class="logout-label">로그아웃</span></button>
+        <div class="footer-divider" aria-hidden="true"></div>
+        <div class="sidebar-account"><img class="account-icon" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHZpZXdCb3g9IjAgMCAyMCAyMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTYuNzA1ODggNi44OTM5NEM2LjcwNTg4IDUuNzI2MTMgNy4zNjQ3MSAzLjUgMTAgMy41QzEyLjYzNTMgMy41IDEzLjI5NDEgNS43MjYxMyAxMy4yOTQxIDYuODkzOTRWOC4xNjY2N0MxMy4yOTQxIDguNjg1NjkgMTIuOTY0NyAxMC4wODkzIDExLjY0NzEgMTAuNzEyMUMxMS42NDcxIDExLjEwMTQgMTEuOTc2NSAxMS43ODYzIDEzLjI5NDEgMTIuNDA5MUMxNC45NDEyIDEzLjE4NzYgMTcgMTMuNzg2NyAxNyAxNC45NTQ1VjE2LjY1MTVDMTcgMTcuMTIwMSAxNi42MDgyIDE3LjUgMTYuMTI1IDE3LjVIMy44NzVDMy4zOTE3NSAxNy41IDMgMTcuMTIwMSAzIDE2LjY1MTVWMTQuOTU0NUMzIDEzLjc4NjcgNS4wNTg4MiAxMy4xODc2IDYuNzA1ODggMTIuNDA5MUM4LjAyMzUzIDExLjc4NjMgOC4zNTI5NCAxMS4xMDE0IDguMzUyOTQgMTAuNzEyMUM3LjAzNTI5IDEwLjA4OTMgNi43MDU4OCA4LjY4NTY5IDYuNzA1ODggOC4xNjY2N1Y2Ljg5Mzk0WiIgZmlsbD0iYmxhY2siLz4KPC9zdmc+Cg==" width="20" height="20" alt=""><span class="user-badge">songsong123@gmail.com</span></div>
+        <span class="sr-only" id="supportCopyStatus" role="status" aria-live="polite"></span>
       </div>
     </div>
   </aside>
@@ -797,12 +853,12 @@ document.getElementById('endClass').onclick=()=>{const button=document.getElemen
 document.getElementById('manageParticipants').onclick=null;
 const copyButton=document.getElementById('copyLink');
 let copyResetTimer,copyPending=false;
-async function copyClassLink(text){
+async function copyClassLink(text,focusTarget=copyButton){
  try{if(navigator.clipboard&&navigator.clipboard.writeText){await navigator.clipboard.writeText(text);return;}}catch(error){}
  const field=document.createElement('textarea');field.value=text;field.readOnly=true;
  field.style.cssText='position:fixed;left:-9999px;top:0;opacity:0';document.body.appendChild(field);
  let copied=false;
- try{field.select();copied=document.execCommand('copy');}finally{field.remove();copyButton.focus({preventScroll:true});}
+ try{field.select();copied=document.execCommand('copy');}finally{field.remove();focusTarget.focus({preventScroll:true});}
  if(!copied)throw new Error('Clipboard unavailable');
 }
 function showCopySuccess(){
@@ -824,6 +880,40 @@ copyButton.onclick=async()=>{
  }catch(error){document.getElementById('copyStatus').textContent='링크를 복사하지 못했습니다. 다시 시도해 주세요.';notice.textContent='링크를 복사하지 못했습니다. 브라우저 주소창에서 복사해 주세요.';}
  finally{copyPending=false;}
 };
+const supportCopyButton=document.getElementById('copySupportEmail');
+let supportCopyPending=false,supportCopyResetTimer;
+function rearmSupportHover(){
+ if(!supportCopyButton.classList.contains('is-copied'))supportCopyButton.classList.remove('is-resting');
+}
+supportCopyButton.addEventListener('pointerenter',rearmSupportHover);
+supportCopyButton.addEventListener('focus',rearmSupportHover);
+supportCopyButton.addEventListener('click',async()=>{
+ if(supportCopyPending)return;
+ supportCopyPending=true;
+ const status=document.getElementById('supportCopyStatus');
+ clearTimeout(supportCopyResetTimer);
+ status.textContent='';
+ try{
+  await copyClassLink('wing@flyingkiwi.kiwi',supportCopyButton);
+  supportCopyButton.classList.remove('is-resting');
+  supportCopyButton.classList.add('is-copied');
+  status.textContent='링크가 복사되었습니다';
+  supportCopyButton.title='링크가 복사되었습니다';
+  supportCopyResetTimer=setTimeout(()=>{
+   // Keep the restored default appearance even while the pointer is still over it.
+   supportCopyButton.classList.add('is-resting');
+   supportCopyButton.classList.remove('is-copied');
+   status.textContent='';
+   supportCopyButton.title='wing@flyingkiwi.kiwi 복사';
+  },1600);
+ }catch(error){
+  supportCopyButton.classList.remove('is-copied');
+  status.textContent='복사하지 못했습니다. wing@flyingkiwi.kiwi를 직접 복사해 주세요.';
+  supportCopyButton.title=status.textContent;
+ }finally{
+  supportCopyPending=false;
+ }
+});
 document.getElementById('editClass').onclick=()=>openClassEditor();
 
 document.getElementById('deleteClass').onclick=()=>openDeletePopup();
@@ -857,39 +947,44 @@ function openReadingPopup(mode,unit=weekOne){
  activeReadingUnit=unit;
  readingPopupMode=mode;
  dialog.dataset.mode=mode;
- dialog.dataset.supportNotice=String(mode==='failure'&&Number(unit.dataset.insightRetries||0)>=3);
+ dialog.dataset.supportNotice=String(mode==='failure');
  const text=document.getElementById('readingPopupText');
  if(mode==='failure'){
-  text.textContent=Number(unit.dataset.insightRetries||0)>=3?'오류가 지속될 경우 개발팀에 문의해주세요.\nwing@flyingkiwi.kiwi':'인사이트 생성에 실패했습니다';
+  text.innerHTML='인사이트 생성에 실패했습니다.<br>오류가 지속될 경우 개발팀에 문의해주세요.<br><strong>wing@flyingkiwi.kiwi</strong>';
  }else if(mode==='start'){
   text.innerHTML='주제를 시작하면 참가자들에게 알림이 가며,<br>함께 읽기가 시작됩니다.';
  }else if(mode==='insight'){
-  text.innerHTML='함께 읽기를 종료하면 자동으로 <span class="social-insight">소셜 인사이트</span>가 생성되어 참여자들의 생각을 다각도로 모아볼 수 있습니다. 그리고 <strong>이 주제의 글에는 더 이상의 생각을 추가할 수 없습니다.</strong>';
+  text.innerHTML='함께 읽기를 종료하면 자동으로 <span class="social-insight">소셜 인사이트</span>가 생성되어 참여자들의 생각을 다각도로 모아볼 수 있습니다. <strong>이 주제의 글에는 더 이상의 생각을 추가할 수 없습니다.</strong><br><br>인사이트 생성은 다소 시간이 걸릴 수 있습니다.';
  }else{
   text.innerHTML='함께 읽기를 다시 시작하여, 새로운 생각을 추가할 수 있습니다. <strong>기존의 소셜 인사이트 정보는 모두 사라지며 이후 다시 생성할 수 있습니다.</strong>';
  }
- document.getElementById('cancelInsight').textContent=mode==='failure'&&Number(unit.dataset.insightRetries||0)>=3?'확인':'취소';
- document.getElementById('confirmInsight').textContent=mode==='failure'?'다시 시도하기':mode==='start'?'주제 시작하기':mode==='insight'?'인사이트 생성':'함께 읽기 다시 시작';
+ document.getElementById('cancelInsight').textContent=mode==='failure'?'확인':'취소';
+ document.getElementById('confirmInsight').textContent=mode==='failure'?'확인':mode==='start'?'주제 시작하기':mode==='insight'?'인사이트 생성':'함께 읽기 다시 시작';
  readingPopupOverflow=document.body.style.overflow;
  document.body.style.overflow='hidden';
  dialog.showModal();
 }
 document.getElementById('cancelInsight').onclick=()=>dialog.close();
-const insightLoadingMarkup="<svg class=\"insight-loading-icon\" aria-hidden=\"true\" focusable=\"false\" width=\"20\" height=\"20\" viewBox=\"0 0 20 20\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n<path class=\"insight-loading-semicolon\" fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M9.36864 12.0878C7.74197 12.6697 7.28001 14.5021 8.45953 15.6935C8.80362 16.0411 9.22967 16.2585 9.69224 16.3226L10.0437 16.3713L10.0155 17.0881C10 17.4824 10.0173 17.8027 10.0539 17.8C10.1397 17.7936 10.967 16.8802 11.4685 16.2382C11.6828 15.9639 11.9653 15.5164 12.0965 15.2438C12.6659 14.0599 12.2534 12.7791 11.1249 12.2276C10.6465 11.9937 9.81624 11.9277 9.36864 12.0878Z\" fill=\"#4D00FF\"/>\n<path class=\"insight-loading-star\" fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M10.013 3.00028C10.012 3.00836 9.97759 3.18223 9.93659 3.38667C9.6644 4.74383 9.40966 5.39481 8.96678 5.8648C8.49838 6.36192 7.81296 6.64691 6.41861 6.9243C6.19119 6.96955 6.00284 7.00885 6.00004 7.01163C5.99726 7.01442 6.13771 7.04405 6.31216 7.07748C6.48663 7.11091 6.81447 7.1832 7.04069 7.2381C8.95609 7.70302 9.45112 8.27403 9.90979 10.5477C9.95675 10.7805 9.99982 10.9834 10.0055 10.9985C10.0112 11.0137 10.0356 10.9226 10.0597 10.7961C10.2213 9.94851 10.3983 9.30985 10.5876 8.89097C10.7428 8.54748 10.8782 8.34658 11.1159 8.10731C11.5748 7.6453 12.2634 7.36881 13.6379 7.09463C13.8773 7.0469 14.0186 7.01111 13.998 7.00344C13.9794 6.9965 13.8232 6.96449 13.6509 6.93231C13.1862 6.84553 12.7958 6.74986 12.3332 6.60938C11.8603 6.46577 11.4165 6.21583 11.1257 5.92948C10.916 5.72291 10.8036 5.56427 10.6565 5.2671C10.4276 4.80452 10.2971 4.36499 10.094 3.37195C10.0505 3.15944 10.0141 2.99219 10.013 3.00028Z\" fill=\"#4D00FF\"/>\n</svg>\n<span>인사이트를 분석하는 중입니다</span>";
+const insightLoadingMarkup='<span class="insight-loading-spinner" aria-hidden="true"></span>';
 function startInsightLoading(unit){
  const button=unit.querySelector('.unit-action');
  if(button.disabled)return;
- button.style.minWidth=button.getBoundingClientRect().width+'px';
+ const loading=document.createElement('span');
+ loading.className='insight-loading-status';
+ loading.setAttribute('role','status');
+ loading.setAttribute('aria-label','인사이트 분석 중');
+ loading.innerHTML=insightLoadingMarkup;
+ button.after(loading);
  button.disabled=true;
  button.setAttribute('aria-busy','true');
  button.classList.add('is-loading');
- button.innerHTML=insightLoadingMarkup;
+
  notice.textContent='인사이트를 분석하는 중입니다';
  setTimeout(()=>{
+  loading.remove();
   button.classList.remove('is-loading');
   button.disabled=false;
   button.removeAttribute('aria-busy');
-  button.style.minWidth='';
   if(unit===weekTwo){
    renderReadingUnit(unit,'reading');
    notice.textContent='9월 2주차 인사이트 생성에 실패했습니다.';
@@ -898,22 +993,23 @@ function startInsightLoading(unit){
    renderReadingUnit(unit,'insight');
    notice.textContent='9월 1주차가 인사이트 상태로 변경되었습니다.';
   }
- },3000);
+ },2000);
 }
 function showInsightFailure(unit){
+ if(unit.dataset.insightFailureShown==='true')return;
  if(dialog.open){
   dialog.addEventListener('close',()=>setTimeout(()=>showInsightFailure(unit),0),{once:true});
   return;
  }
+ unit.dataset.insightFailureShown='true';
  openReadingPopup('failure',unit);
 }
 document.getElementById('confirmInsight').onclick=()=>{
  const unit=activeReadingUnit;
  if(unit.querySelector('.unit-action').disabled)return;
- if(readingPopupMode==='insight'||readingPopupMode==='failure'){
-  if(unit===weekTwo){
-   unit.dataset.insightRetries=readingPopupMode==='failure'?Number(unit.dataset.insightRetries||0)+1:0;
-  }
+ if(readingPopupMode==='failure'){dialog.close();return;}
+ if(readingPopupMode==='insight'){
+  unit.dataset.insightFailureShown='false';
   dialog.close();
   startInsightLoading(unit);
   return;
@@ -986,11 +1082,11 @@ syncResponsiveSidebar();
 <div class="dg-section"><p>요소 위에 마우스를 올리면 크기와 내부 여백이 표시됩니다. 클릭하면 해당 요소의 정보를 고정합니다. 링크 복사·클래스 삭제·목록 상태 버튼은 가이드에서도 작동하며 관련 가이드로 자동 이동합니다. 다른 요소는 클릭해 규격을 확인합니다. 모든 치수는 현재 화면의 CSS px 기준입니다.</p><p>보라색: 요소 경계 · 초록색: 내부 여백. 창 크기를 바꾸면 측정값이 갱신됩니다.</p><button id="dgResume">마우스로 다시 살펴보기</button></div>
 <section class="dg-section dg-behavior" id="dgDeleteBehavior" tabindex="-1" aria-label="삭제 팝업 가이드"><h3>삭제 팝업 · 상태와 규격</h3><p>가이드 OFF: 삭제 불가 안내만 중앙 표시. 가이드 ON: 삭제 확인 시안까지 세로로 함께 표시합니다. 안내 팝업 460×220px, 확인 팝업 460×196px, 두 팝업 간격 68px. 확인 팝업은 취소·삭제 버튼을 가로로 배치합니다. 삭제 버튼은 시안 확인용이며 실제 데이터를 삭제하지 않습니다.</p><button id="dgOpenDelete">팝업 두 개 보기</button><div id="dgPopupSpecs"></div></section>
 <section class="dg-section dg-behavior" id="dgCopyBehavior" tabindex="-1" aria-label="링크 복사 가이드"><h3>링크 복사 · 상태와 모션</h3><div id="dgCopySamples"></div><strong id="dgMotionState" role="status">기본 상태</strong><button id="dgReplayCopy">전환 모션 재생</button><p>재생 버튼은 클립보드를 변경하지 않고 실제 상단 버튼의 모션을 재생합니다.</p><table><tr><th>완료 전환</th><td>opacity 교차 페이드 · 220ms ease</td></tr><tr><th>완료 유지</th><td>성공 시점부터 2,000ms</td></tr><tr><th>원래 상태 복귀</th><td>opacity 교차 페이드 · 1,000ms ease</td></tr><tr><th>재클릭</th><td>복사 성공 시 2초 타이머 초기화</td></tr><tr><th>아이콘 / 간격</th><td>18×18px / 텍스트까지 3px</td></tr><tr><th>삭제 버튼 간격</th><td>우측 정렬, 20px 고정</td></tr><tr><th>접근성</th><td>모션 줄이기 설정 시 전환 없음. 성공 문구를 스크린리더에 알림.</td></tr></table></section>
-<section class="dg-section dg-behavior" id="dgCloseBehavior" tabindex="-1"><h3>클래스 종료 팝업</h3><p>상단 클래스 종료 버튼으로 표시합니다. 종료 후 가입·글 작성이 불가능하다는 안내를 제공합니다. 확인을 누르면 팝업이 닫히고 상단 버튼이 클래스 시작으로 바뀝니다. 클래스 시작을 누르면 클래스 종료로 돌아옵니다. 취소·Esc·바깥 영역 클릭은 상태를 바꾸지 않습니다. 현재는 미리보기로 실제 서비스 데이터는 변경하지 않습니다.</p><table><tr><th>크기</th><td>최대 폭 460px · 기본 높이 220px · 내부 여백 40px</td></tr><tr><th>본문</th><td>나눔명조 Bold · 15px / 24px · 아래 간격 32px</td></tr><tr><th>버튼</th><td>취소·확인 가로 배치 · 각 184×60px · 간격 12px · 나눔명조 Bold 15px</td></tr><tr><th>컬러</th><td>딤드 #000 60% · 팝업 #FDFCF8 · 확인 #009E73 · 취소 #D8EEE4</td></tr></table></section><section class="dg-section dg-behavior" id="dgEditBehavior" tabindex="-1"><h3>클래스 정보 수정 팝업</h3><p>버튼을 누르면 배경이 60% 검정으로 딤드되고 중앙 폼이 열립니다. 기존 정보를 불러오며 본문 제목으로 커서를 옮기지 않습니다. 수정하기로 현재 화면에 반영하고, Esc 또는 바깥 영역을 누르면 취소합니다.</p><table><tr><th>팝업</th><td>최대 폭 500px · 모서리 32px · 배경 #FDFCF8</td></tr><tr><th>안쪽 여백</th><td>위 50 / 좌우 60 / 아래 60px</td></tr><tr><th>사진</th><td>52×52px · 이름 입력칸 오른쪽 · 간격 10px · 편집 아이콘 ic_profile.svg 24×24px</td></tr><tr><th>입력칸</th><td>높이 52px · 설명 92px 고정 / 내부 스크롤 / 크기 조절 불가 · 사이 간격 20px · 모서리 16px</td></tr><tr><th>입력 글꼴</th><td>나눔명조 Bold · 15px / 20px</td></tr><tr><th>수정 버튼</th><td>취소·수정 가로 1:2 배치 · 높이 60px · 간격 12px · 위 간격 30px · 나눔명조 Bold 15px</td></tr></table><p>프로필 사진은 로컬 미리보기로 적용됩니다. 저장 내용은 새로고침하면 초기화됩니다. 요소를 선택하면 현재 화면에서의 상세 규격을 확인할 수 있습니다.</p></section><section class="dg-section dg-behavior" id="dgWeekBehavior" tabindex="-1" aria-label="클래스 목록 상태 가이드"><h3>클래스 목록 · 버튼 상태</h3><p>주제 시작하기를 누르면 확인 팝업을 표시하며, 확인 후 보라색 인사이트 생성 버튼으로 변경됩니다. 인사이트 생성과 함께 읽기 다시 시작은 팝업에서 확인하면 적용됩니다. 취소·Esc·바깥 영역 클릭은 상태를 유지합니다. 새로고침하면 1주차는 시작 전, 2주차는 읽기 진행 상태로 초기화됩니다.</p><strong id="dgWeekCurrent" role="status"></strong><div id="dgWeekStates"></div><p>기본 버튼: 글자 #525252, 배경 #FFFFFF, 테두리 #E2E2E2, SemiBold(600). 인사이트 생성 버튼: 글자 #7427FF, 배경 #F5EFFF, 테두리 #DDC8FF.</p><p>배지: 시작 전 #41413F · 함께 읽기 #FF7900 · 인사이트 #6400FF. 배지 글자는 모두 #FFFFFF입니다.</p><p>주제 시작·다시 읽기는 즉시 적용하고, 인사이트 생성은 3초 로딩 후 결과를 표시합니다. 1주차는 성공, 2주차는 실패·재시도 시나리오입니다. 실제 서비스의 종료·재개·AI 분석 요청은 연결되지 않은 미리보기입니다.</p></section>
+<section class="dg-section dg-behavior" id="dgCloseBehavior" tabindex="-1"><h3>클래스 종료 팝업</h3><p>상단 클래스 종료 버튼으로 표시합니다. 종료 후 가입·글 작성이 불가능하다는 안내를 제공합니다. 확인을 누르면 팝업이 닫히고 상단 버튼이 클래스 시작으로 바뀝니다. 클래스 시작을 누르면 클래스 종료로 돌아옵니다. 취소·Esc·바깥 영역 클릭은 상태를 바꾸지 않습니다. 현재는 미리보기로 실제 서비스 데이터는 변경하지 않습니다.</p><table><tr><th>크기</th><td>최대 폭 460px · 기본 높이 220px · 내부 여백 40px</td></tr><tr><th>본문</th><td>나눔명조 Bold · 15px / 24px · 아래 간격 32px</td></tr><tr><th>버튼</th><td>취소·확인 가로 배치 · 각 184×60px · 간격 12px · 나눔명조 Bold 15px</td></tr><tr><th>컬러</th><td>딤드 #000 60% · 팝업 #FDFCF8 · 확인 #009E73 · 취소 #D8EEE4</td></tr></table></section><section class="dg-section dg-behavior" id="dgEditBehavior" tabindex="-1"><h3>클래스 정보 수정 팝업</h3><p>버튼을 누르면 배경이 60% 검정으로 딤드되고 중앙 폼이 열립니다. 기존 정보를 불러오며 본문 제목으로 커서를 옮기지 않습니다. 수정하기로 현재 화면에 반영하고, Esc 또는 바깥 영역을 누르면 취소합니다.</p><table><tr><th>팝업</th><td>최대 폭 500px · 모서리 32px · 배경 #FDFCF8</td></tr><tr><th>안쪽 여백</th><td>위 50 / 좌우 60 / 아래 60px</td></tr><tr><th>사진</th><td>52×52px · 이름 입력칸 오른쪽 · 간격 10px · 편집 아이콘 ic_profile.svg 24×24px</td></tr><tr><th>입력칸</th><td>높이 52px · 설명 92px 고정 / 내부 스크롤 / 크기 조절 불가 · 사이 간격 20px · 모서리 16px</td></tr><tr><th>입력 글꼴</th><td>나눔명조 Bold · 15px / 20px</td></tr><tr><th>수정 버튼</th><td>취소·수정 가로 1:2 배치 · 높이 60px · 간격 12px · 위 간격 30px · 나눔명조 Bold 15px</td></tr></table><p>프로필 사진은 로컬 미리보기로 적용됩니다. 저장 내용은 새로고침하면 초기화됩니다. 요소를 선택하면 현재 화면에서의 상세 규격을 확인할 수 있습니다.</p></section><section class="dg-section dg-behavior" id="dgWeekBehavior" tabindex="-1" aria-label="클래스 목록 상태 가이드"><h3>클래스 목록 · 버튼 상태</h3><p>주제 시작하기를 누르면 확인 팝업을 표시하며, 확인 후 보라색 인사이트 생성 버튼으로 변경됩니다. 인사이트 생성과 함께 읽기 다시 시작은 팝업에서 확인하면 적용됩니다. 취소·Esc·바깥 영역 클릭은 상태를 유지합니다. 새로고침하면 1주차는 시작 전, 2주차는 읽기 진행 상태로 초기화됩니다.</p><strong id="dgWeekCurrent" role="status"></strong><div id="dgWeekStates"></div><p>기본 버튼: 글자 #525252, 배경 #FFFFFF, 테두리 #E2E2E2, SemiBold(600). 인사이트 생성 버튼: 글자 #7427FF, 배경 #F5EFFF, 테두리 #DDC8FF.</p><p>배지: 시작 전 #41413F · 함께 읽기 #FF7900 · 인사이트 #6400FF. 배지 글자는 모두 #FFFFFF입니다.</p><p>주제 시작·다시 읽기는 즉시 적용하고, 인사이트 생성은 2초 로딩 후 결과를 표시합니다. 1주차는 성공, 2주차는 실패 안내 시나리오입니다. 실제 서비스의 종료·재개·AI 분석 요청은 연결되지 않은 미리보기입니다.</p></section>
 
-<section class="dg-section dg-behavior" id="dgInsightLoading" tabindex="-1" aria-label="인사이트 로딩 버튼 가이드"><h3>인사이트 생성 · 로딩 버튼</h3><p>팝업에서 인사이트 생성을 확인하면 팝업을 닫고 해당 주차 버튼에 3초 동안 표시합니다. 아래는 같은 아이콘과 모션을 사용하는 반복 미리보기입니다.</p><div class="dg-loading-sample" id="dgInsightLoadingSample"></div><strong id="dgInsightCurrent" role="status"></strong><table><tr><th>문구</th><td>인사이트를 분석하는 중입니다</td></tr><tr><th>로딩 시간</th><td>3,000ms · 중복 클릭 차단 · 기존 버튼 너비 유지</td></tr><tr><th>아이콘</th><td>ic_star.svg · 20×20px · #4D00FF · 문구와 간격 10px</td></tr><tr><th>아이콘 모션</th><td>위 반짝이 / 아래 세미콜론 교대 점멸. 주기 1초, ease-in-out, 위상 차이 0.5초. opacity 1 ↔ 0.15. 회전 없음.</td></tr><tr><th>문구 모션</th><td>1.5초 ease-in-out 반복 · opacity 1 ↔ 0.1 · 그라데이션 없음</td></tr><tr><th>완료 분기</th><td>1주차: 인사이트 상태로 변경. 2주차: 읽기 상태로 복원 후 실패 팝업.</td></tr><tr><th>접근성</th><td>disabled / aria-busy 적용. 모션 줄이기 설정에서는 아이콘과 문구가 정지합니다.</td></tr></table></section>
-<section class="dg-section dg-behavior" id="dgInsightFailure" tabindex="-1" aria-label="인사이트 생성 실패 팝업 가이드"><h3>인사이트 생성 실패 · 재시도 팝업</h3><div class="dg-state-card"><strong>인사이트 생성에 실패했습니다</strong><p>취소 · 다시 시도하기</p></div><p>2주차의 최초 생성 실패와 첫 번째·두 번째 재시도 실패에 표시합니다. 취소·Esc·바깥 클릭은 팝업을 닫고 읽기 상태를 유지합니다. 다시 시도하기는 같은 3초 로딩을 재생합니다.</p><table><tr><th>팝업 규격</th><td>기존 읽기 팝업과 동일. 최대 너비 460px · 여백 40px · 모서리 32px · 배경 #FDFCF8 · 검정 딤드 60%</td></tr><tr><th>본문</th><td>나눔명조 · Extra Bold(800) · 15px / 24px · 중앙 정렬 · 버튼까지 32px</td></tr><tr><th>버튼 배치</th><td>취소 : 재시도 = 1 : 2 · 높이 60px · 간격 12px · 모서리 32px</td></tr><tr><th>취소 색상</th><td>배경 #EEEDE9 · 글자 #111111</td></tr><tr><th>재시도 색상</th><td>배경 #D33F40 · 글자 #FFFFFF</td></tr><tr><th>모바일</th><td>600px 이하: 여백 32px 24px · 모서리 24px · 화면 좌우 최소 16px</td></tr></table><p id="dgInsightPopupCurrent" role="status">실패 팝업이 열리면 현재 크기와 재시도 횟수를 표시합니다.</p></section>
-<section class="dg-section dg-behavior" id="dgInsightSupport" tabindex="-1" aria-label="반복 실패 개발팀 안내 팝업 가이드"><h3>세 번째 재시도 실패 · 개발팀 안내</h3><div class="dg-state-card"><strong>오류가 지속될 경우 개발팀에 문의해주세요.<br>wing@flyingkiwi.kiwi</strong><p>확인</p></div><p>최초 생성 이후 다시 시도하기를 세 번째 누른 결과도 실패하면 표시합니다(총 네 번째 생성 실패). 그 이후 단계에서는 다시 시도하기를 숨깁니다.</p><table><tr><th>본문</th><td>위 안내 문구와 이메일을 두 줄로 표시 · Extra Bold(800) · 15px / 24px · 중앙 정렬</td></tr><tr><th>확인 버튼</th><td>너비 300px · 높이 60px · 가로 중앙 정렬 · 좁은 화면에서는 내용 영역에 맞춰 축소</td></tr><tr><th>버튼 색상</th><td>배경 #EEEDE9 · 글자 #111111</td></tr><tr><th>닫기</th><td>확인·Esc·바깥 클릭으로 닫기 · 2주차 읽기 상태 유지</td></tr><tr><th>공통 규격</th><td>실패 팝업과 같은 너비·여백·모서리·배경. 두 줄 본문에 맞춰 높이 자동 조정.</td></tr><tr><th>횟수 초기화</th><td>목록에서 인사이트 생성을 새로 시작하면 재시도 횟수 0으로 초기화. 새로고침도 초기화.</td></tr></table></section>
+<section class="dg-section dg-behavior" id="dgInsightLoading" tabindex="-1" aria-label="인사이트 원형 로딩 가이드"><h3>인사이트 생성 · 원형 로딩</h3><p>인사이트 생성을 확인하면 버튼과 아이콘·문구를 숨기고 보라색 원형 로딩 표시만 2초 동안 보여줍니다.</p><div class="dg-loading-sample" id="dgInsightLoadingSample"></div><strong id="dgInsightCurrent" role="status"></strong><table><tr><th>모양</th><td>20×20px 원형 · 선 두께 2px · #7427FF · 배경 선 #E6D9FF</td></tr><tr><th>위치</th><td>주차 제목 영역 오른쪽에서 20px · 세로 중앙 정렬</td></tr><tr><th>모션</th><td>0.8초 linear 무한 회전 · 모션 줄이기 설정에서는 정지</td></tr><tr><th>완료</th><td>1주차 성공 · 2주차 실패 시 개발팀 안내 팝업 한 번 표시</td></tr><tr><th>접근성</th><td>중복 요청 차단 · role=status · 인사이트 분석 중 안내</td></tr></table></section>
+<section class="dg-section dg-behavior" id="dgInsightFailure" tabindex="-1" aria-label="인사이트 생성 실패 팝업 가이드"><h3>인사이트 생성 실패 · 안내 팝업</h3><div class="dg-state-card"><div>인사이트 생성에 실패했습니다.<br>오류가 지속될 경우 개발팀에 문의해주세요.<br><strong>wing@flyingkiwi.kiwi</strong></div><p>확인</p></div><p>실패 시 개발팀 안내 팝업을 생성 요청당 한 번만 표시합니다. 단계별 재시도 팝업은 표시하지 않습니다. 확인·Esc·바깥 클릭으로 닫으면 읽기 상태를 유지합니다.</p><p id="dgInsightPopupCurrent" role="status">실패 팝업이 열리면 현재 크기를 표시합니다.</p></section>
+<section class="dg-section dg-behavior" id="dgInsightSupport" tabindex="-1" aria-label="개발팀 안내 팝업 가이드"><h3>개발팀 안내 · 한 번만 표시</h3><p>생성 실패 즉시 표시하는 단일 팝업입니다. 확인 버튼만 표시하며 목록에서 새로 생성하면 새 요청으로 처리합니다.</p><table><tr><th>확인 버튼</th><td>너비 300px · 높이 60px · 중앙 정렬 · 배경 #EEEDE9 · 글자 #111111</td></tr><tr><th>팝업</th><td>최대 너비 460px · 여백 40px · 모서리 32px · 배경 #FDFCF8</td></tr></table></section>
 <div class="dg-section dg-behavior" id="dgElementDetails" tabindex="-1"><h3 id="dgElementName">선택 요소</h3><table id="dgProperties"></table></div>
 <div class="dg-section"><details open><summary>주요 요소의 크기와 모든 간격</summary><p>padding과 margin 순서: 위 / 오른쪽 / 아래 / 왼쪽. 자동 중앙 정렬 여백은 실제 배치로 별도 표시됩니다.</p><div id="dgLayout"></div></details></div>
 <div class="dg-section"><details><summary>컬러 · 글꼴</summary><div id="dgTokens"></div></details></div>
@@ -1101,19 +1197,19 @@ new MutationObserver(()=>{if(!deleteOverlay.hidden)document.dispatchEvent(new Ev
   root.querySelectorAll('[data-guide-state]').forEach(card=>card.classList.toggle('is-current',card.dataset.guideState===current));
  }
  updateState();new MutationObserver(updateState).observe(weekOne,{attributes:true,attributeFilter:['data-state']});
-  const loadingSample=document.createElement('button');
-  loadingSample.type='button';loadingSample.disabled=true;loadingSample.className='unit-action insight is-loading';
+  const loadingSample=document.createElement('span');
+  loadingSample.className='insight-loading-status';loadingSample.setAttribute('role','status');
   loadingSample.setAttribute('aria-label','인사이트 분석 중 모션 미리보기');
   loadingSample.innerHTML=insightLoadingMarkup;
-  Object.assign(loadingSample.style,{display:'inline-flex',alignItems:'center',justifyContent:'center',gap:'10px',color:'#7427ff',background:'#f5efff',border:'1px solid #ddc8ff',padding:'9px 12px',font:'600 12px/20px Pretendard,sans-serif',maxWidth:'100%'});
+  loadingSample.style.marginRight='20px';
   document.getElementById('dgInsightLoadingSample').append(loadingSample);
   function updateInsightGuide(){
    updateState();
    const loadingUnits=[weekOne,weekTwo].filter(unit=>unit.querySelector('.unit-action').disabled);
-   document.getElementById('dgInsightCurrent').textContent=loadingUnits.length?loadingUnits.map(unit=>unit.querySelector('h2').textContent).join(', ')+' · 분석 중 (3초)':'현재 로딩 없음';
+   document.getElementById('dgInsightCurrent').textContent=loadingUnits.length?loadingUnits.map(unit=>unit.querySelector('h2').textContent).join(', ')+' · 분석 중 (2초)':'현재 로딩 없음';
    if(dialog.open&&dialog.dataset.mode==='failure'){
     const r=dialog.getBoundingClientRect();
-    document.getElementById('dgInsightPopupCurrent').textContent='현재: '+Math.round(r.width)+'×'+Math.round(r.height)+'px · 재시도 '+Number(activeReadingUnit.dataset.insightRetries||0)+'회 · '+(dialog.dataset.supportNotice==='true'?'개발팀 안내 / 확인만 표시':'실패 안내 / 취소·재시도');
+    document.getElementById('dgInsightPopupCurrent').textContent='현재: '+Math.round(r.width)+'×'+Math.round(r.height)+'px · 개발팀 안내 / 확인만 표시';
     focusGuide(dialog.dataset.supportNotice==='true'?'dgInsightSupport':'dgInsightFailure');
    }else if(loadingUnits.length){focusGuide('dgInsightLoading');}
   }
